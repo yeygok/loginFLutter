@@ -49,16 +49,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      final username = _usernameController.text;
+      final email = _usernameController.text;
       final password = _passwordController.text;
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            username: username,
-            password: password,
-          ),
+          builder: (context) => HomeScreen(email: email, password: password),
         ),
       );
     }

@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
-  final String username;
+  final String email;
   final Function(int) onItemSelected;
   final VoidCallback onLogout;
   final int currentIndex;
 
   const CustomDrawer({
     super.key,
-    required this.username,
+    required this.email,
     required this.onItemSelected,
     required this.onLogout,
     required this.currentIndex,
   });
+
+  String get username => email.split('@')[0];
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +64,7 @@ class CustomDrawer extends StatelessWidget {
             ),
           ),
           Text(
-            'usuario@demo.com',
+            email,
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
             ),

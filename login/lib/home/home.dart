@@ -7,12 +7,12 @@ import '../auth/settings_screen.dart';
 import '../auth/login.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String username;
+  final String email;
   final String password;
 
   const HomeScreen({
     super.key,
-    required this.username,
+    required this.email,
     required this.password,
   });
 
@@ -27,15 +27,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late List<Widget> _pages;
 
+  // Función helper para extraer el username del email
+  String get username {
+    return widget.email.split('@')[0];
+  }
+
   @override
   void initState() {
     super.initState();
     _pages = [
-      HomeContent(username: widget.username),
-      UserScreen(username: widget.username, password: widget.password),
+      HomeContent(username: username),
+      UserScreen(email: widget.email, password: widget.password),
       SettingsScreen(
-        currentEmail: '${widget.username}@demo.com',
-        username: widget.username,
+        currentEmail: widget.email,
+        username: username,
       ),
     ];
   }
@@ -66,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
       ),
       drawer: CustomDrawer(
-        username: widget.username,
+        email: widget.email,
         onItemSelected: _onDrawerItemSelected,
         onLogout: _logout,
         currentIndex: _currentIndex,

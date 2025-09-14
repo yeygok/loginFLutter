@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import '../../widgets/appbar.dart';
 
 class UserScreen extends StatelessWidget {
-  final String username;
+  final String email;
   final String password;
 
   const UserScreen({
     super.key,
-    required this.username,
+    required this.email,
     required this.password,
   });
+
+  // Función helper para extraer el username del email
+  String get username {
+    return email.split('@')[0];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,7 @@ class UserScreen extends StatelessWidget {
                   children: [
                     _buildInfoRow('Usuario:', username),
                     const SizedBox(height: 15),
-                    _buildInfoRow('Email:', '$username@demo.com'),
+                    _buildInfoRow('Email:', email),
                     const SizedBox(height: 15),
                     _buildInfoRow('Contraseña:',
                         '${'*' * password.length} (${password.length} caracteres)'),
