@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/appbar.dart';
 import '../home/home.dart';
 import '../user/form.dart';
+import '../utils/validation_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -82,16 +83,13 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Usuario',
-                  prefixIcon: Icon(Icons.person),
+                  labelText: 'Correo Electrónico',
+                  prefixIcon: Icon(Icons.email),
                   border: OutlineInputBorder(),
+                  hintText: 'ejemplo@correo.com',
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese su usuario';
-                  }
-                  return null;
-                },
+                keyboardType: TextInputType.emailAddress,
+                validator: ValidationUtils.validateEmail,
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -102,12 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese su contraseña';
-                  }
-                  return null;
-                },
+                validator: ValidationUtils.validateCurrentPassword,
               ),
               const SizedBox(height: 30),
               ElevatedButton(

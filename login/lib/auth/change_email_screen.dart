@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/appbar.dart';
+import '../utils/validation_utils.dart';
 
 class ChangeEmailScreen extends StatefulWidget {
   final String currentEmail;
@@ -69,20 +70,13 @@ class _ChangeEmailScreenState extends State<ChangeEmailScreen> {
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Nuevo email',
+                  labelText: 'Nuevo correo electrónico',
                   prefixIcon: Icon(Icons.email),
                   border: OutlineInputBorder(),
+                  hintText: 'ejemplo@correo.com',
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa un email';
-                  }
-                  if (!value.contains('@') || !value.contains('.')) {
-                    return 'Ingresa un email válido';
-                  }
-                  return null;
-                },
+                validator: ValidationUtils.validateEmail,
               ),
               const SizedBox(height: 30),
               SizedBox(

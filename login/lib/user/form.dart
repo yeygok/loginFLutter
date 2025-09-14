@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/appbar.dart';
+import '../utils/validation_utils.dart';
 
 class UserFormScreen extends StatefulWidget {
   const UserFormScreen({super.key});
@@ -18,13 +19,6 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
   void _register() {
     if (_formKey.currentState!.validate()) {
-      if (_passwordController.text != _confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Las contraseñas no coinciden')),
-        );
-        return;
-      }
-
       final userData = {
         'username': _usernameController.text,
         'password': _passwordController.text,
@@ -73,20 +67,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Correo Electrónico',
                   prefixIcon: Icon(Icons.email),
                   border: OutlineInputBorder(),
+                  hintText: 'ejemplo@correo.com',
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese un email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Ingrese un email válido';
-                  }
-                  return null;
-                },
+                validator: ValidationUtils.validateEmail,
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -95,17 +82,46 @@ class _UserFormScreenState extends State<UserFormScreen> {
                   labelText: 'Contraseña',
                   prefixIcon: Icon(Icons.lock),
                   border: OutlineInputBorder(),
+                  helperText:
+                      '8-16 caracteres, mayúscula, minúscula, número y carácter especial',
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese una contraseña';
-                  }
-                  if (value.length < 6) {
-                    return 'La contraseña debe tener al menos 6 caracteres';
-                  }
-                  return null;
-                },
+                validator: ValidationUtils.validatePassword,
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.info, size: 16, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text(
+                          'Requisitos de contraseña:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      ValidationUtils.getPasswordRequirements(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue[800],
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -116,12 +132,10 @@ class _UserFormScreenState extends State<UserFormScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor confirme su contraseña';
-                  }
-                  return null;
-                },
+                validator: (value) => ValidationUtils.validateConfirmPassword(
+                  value,
+                  _passwordController.text,
+                ),
               ),
               const SizedBox(height: 30),
               Row(

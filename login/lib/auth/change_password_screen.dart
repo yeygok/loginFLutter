@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/appbar.dart';
+import '../utils/validation_utils.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   final String username;
@@ -31,16 +32,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   void _changePassword() {
     if (_formKey.currentState!.validate()) {
-      if (_newPasswordController.text != _confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Las contraseñas no coinciden'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
       // Aquí implementarías la lógica para cambiar la contraseña
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -82,12 +73,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ingresa tu contraseña actual';
-                  }
-                  return null;
-                },
+                validator: ValidationUtils.validateCurrentPassword,
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -96,17 +82,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   labelText: 'Nueva contraseña',
                   prefixIcon: Icon(Icons.lock),
                   border: OutlineInputBorder(),
+                  helperText:
+                      '8-16 caracteres, mayúscula, minúscula, número y carácter especial',
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Ingresa una nueva contraseña';
-                  }
-                  if (value.length < 6) {
-                    return 'La contraseña debe tener al menos 6 caracteres';
-                  }
-                  return null;
-                },
+                validator: ValidationUtils.validatePassword,
               ),
               const SizedBox(height: 20),
               TextFormField(
@@ -117,12 +97,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   border: OutlineInputBorder(),
                 ),
                 obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Confirma tu nueva contraseña';
-                  }
-                  return null;
-                },
+                validator: (value) => ValidationUtils.validateConfirmPassword(
+                  value,
+                  _newPasswordController.text,
+                ),
               ),
               const SizedBox(height: 30),
               SizedBox(
