@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'splash/splash_app.dart';
+import 'theme/yeygokstilo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,10 +12,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      title: 'YeygokApp - Flutter Login',
+      theme: YeygokEstilo.temaClaro,
+      darkTheme: YeygokEstilo.temaOscuro,
+      themeMode: ThemeMode.system, // Se adapta al tema del sistema
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );

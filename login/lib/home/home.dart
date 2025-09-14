@@ -3,7 +3,7 @@ import '../widgets/appbar.dart';
 import '../widgets/navigation_drawer.dart';
 import '../widgets/navigation_bottom.dart';
 import '../user/user.dart';
-import '../auth/settings_screen.dart';
+import '../views/settings_screen.dart';
 import '../auth/login.dart';
 
 class HomeScreen extends StatefulWidget {
