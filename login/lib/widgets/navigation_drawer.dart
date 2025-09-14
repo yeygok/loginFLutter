@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/yeygokstilo.dart';
 
 class CustomDrawer extends StatelessWidget {
   final String email;
@@ -19,11 +20,14 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      backgroundColor: YeygokEstilo.drawerBackgroundColor,
+      child: Column(
         children: [
           _buildHeader(context),
-          _buildMenuItems(context),
+          Expanded(
+            child: _buildMenuItems(),
+          ),
+          _buildLogoutSection(context),
         ],
       ),
     );
@@ -31,42 +35,33 @@ class CustomDrawer extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return DrawerHeader(
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.8),
-          ],
-        ),
-      ),
+      decoration: YeygokEstilo.headerDrawer,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const CircleAvatar(
             radius: 30,
-            backgroundColor: Colors.white,
+            backgroundColor: YeygokEstilo.blanco,
             child: Icon(
               Icons.person,
-              size: 40,
-              color: Colors.blue,
+              size: 35,
+              color: YeygokEstilo.verdeClaro,
             ),
           ),
           const SizedBox(height: 15),
           Text(
             username,
             style: const TextStyle(
-              color: Colors.white,
+              color: YeygokEstilo.blanco,
               fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
             ),
           ),
           Text(
             email,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
+              color: YeygokEstilo.blanco.withOpacity(0.9),
+              fontSize: 13,
             ),
           ),
         ],
@@ -74,101 +69,73 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItems(BuildContext context) {
-    return Column(
+  Widget _buildMenuItems() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
-        _buildListTile(
-          context,
-          Icons.home,
-          'Inicio',
-          0,
-          currentIndex == 0,
-        ),
-        _buildListTile(
-          context,
-          Icons.person,
-          'Mi Perfil',
-          1,
-          currentIndex == 1,
-        ),
-        _buildListTile(
-          context,
-          Icons.settings,
-          'Configuración',
-          2,
-          currentIndex == 2,
-        ),
-        const Divider(),
-        _buildListTile(
-          context,
-          Icons.notifications,
-          'Notificaciones',
-          3,
-          false,
-        ),
-        _buildListTile(
-          context,
-          Icons.help,
-          'Ayuda',
-          4,
-          false,
-        ),
-        _buildListTile(
-          context,
-          Icons.info,
-          'Acerca de',
-          5,
-          false,
-        ),
-        const Divider(),
-        _buildLogoutTile(context),
+        _buildMenuItem(Icons.home_outlined, 'Inicio', 0),
+        _buildMenuItem(Icons.person_outline, 'Perfil', 1),
+        _buildMenuItem(Icons.settings_outlined, 'Configuración', 2),
       ],
     );
   }
 
-  Widget _buildListTile(
-    BuildContext context,
-    IconData icon,
-    String title,
-    int index,
-    bool isSelected,
-  ) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? Theme.of(context).primaryColor : Colors.grey[700],
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
+  Widget _buildMenuItem(IconData icon, String title, int index) {
+    final isSelected = currentIndex == index;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? YeygokEstilo.verdeClaro : YeygokEstilo.grisOscuro,
+          size: 22,
         ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? YeygokEstilo.verdeOscuro : YeygokEstilo.negro,
+            fontSize: 15,
+          ),
+        ),
+        selected: isSelected,
+        selectedTileColor: YeygokEstilo.verdeSuave,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        onTap: () => onItemSelected(index),
       ),
-      trailing: isSelected
-          ? Icon(
-              Icons.arrow_forward,
-              color: Theme.of(context).primaryColor,
-              size: 20,
-            )
-          : null,
-      onTap: () => onItemSelected(index),
-      selected: isSelected,
-      selectedTileColor: Theme.of(context).primaryColor.withOpacity(0.1),
     );
   }
 
-  Widget _buildLogoutTile(BuildContext context) {
-    return ListTile(
-      leading: const Icon(Icons.logout, color: Colors.red),
-      title: const Text(
-        'Cerrar Sesión',
-        style: TextStyle(color: Colors.red),
+  Widget _buildLogoutSection(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: YeygokEstilo.grisMedio, width: 0.5),
+        ),
       ),
-      onTap: () {
-        Navigator.pop(context); // Cerrar el drawer
-        onLogout();
-      },
+      child: ListTile(
+        leading: const Icon(
+          Icons.logout_outlined,
+          color: Colors.red,
+          size: 22,
+        ),
+        title: const Text(
+          'Cerrar Sesión',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+          onLogout();
+        },
+      ),
     );
   }
 }

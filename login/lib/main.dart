@@ -14,8 +14,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'YeygokApp - Flutter Login',
       theme: YeygokEstilo.temaClaro,
-      darkTheme: YeygokEstilo.temaOscuro,
-      themeMode: ThemeMode.system, // Se adapta al tema del sistema
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
