@@ -95,9 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: 'Contraseña',
                   prefixIcon: Icon(Icons.lock),
                   border: OutlineInputBorder(),
+                  helperText:
+                      '8-16 caracteres, mayúscula, minúscula, número y carácter especial',
                 ),
                 obscureText: true,
-                validator: ValidationUtils.validateCurrentPassword,
+                validator: ValidationUtils.validatePassword,
               ),
               const SizedBox(height: 30),
               ElevatedButton(

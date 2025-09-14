@@ -51,6 +51,20 @@ class ValidationUtils {
     return null;
   }
 
+  // Validación para confirmar email
+  static String? validateConfirmEmail(String? value, String? originalEmail) {
+    if (value == null || value.isEmpty) {
+      return 'Por favor confirme su correo electrónico';
+    }
+
+    if (value != originalEmail) {
+      return 'Los correos electrónicos no coinciden';
+    }
+
+    // También validar que el email sea válido
+    return validateEmail(value);
+  }
+
   // Validación para confirmar contraseña
   static String? validateConfirmPassword(
       String? value, String? originalPassword) {
