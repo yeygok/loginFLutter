@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../widgets/appbar.dart';
-import '../../widgets/navigation_drawer.dart';
-import '../../widgets/navigation_bottom.dart';
+import '../widgets/appbar.dart';
+import '../widgets/navigation_drawer.dart';
+import '../widgets/navigation_bottom.dart';
 import '../user/user.dart';
-import '../auth/change_password.dart';
+import '../auth/settings_screen.dart';
 import '../auth/login.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,7 +33,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _pages = [
       HomeContent(username: widget.username),
       UserScreen(username: widget.username, password: widget.password),
-      const ChangePasswordScreen(),
+      SettingsScreen(
+        currentEmail: '${widget.username}@demo.com',
+        username: widget.username,
+      ),
     ];
   }
 
@@ -147,7 +150,8 @@ class HomeContent extends StatelessWidget {
             children: [
               _buildFeatureCard(Icons.person, 'Perfil', Colors.blue),
               _buildFeatureCard(Icons.settings, 'Configuración', Colors.green),
-              _buildFeatureCard(Icons.notifications, 'Notificaciones', Colors.orange),
+              _buildFeatureCard(
+                  Icons.notifications, 'Notificaciones', Colors.orange),
               _buildFeatureCard(Icons.help, 'Ayuda', Colors.purple),
             ],
           ),
