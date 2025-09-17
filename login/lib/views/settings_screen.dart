@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'change_email_screen.dart';
-import 'change_password_screen.dart';
-import 'theme_settings_screen.dart';
-import 'language_settings_screen.dart';
+//import 'change_email_screen.dart';
+//import 'change_password_screen.dart';
+//import 'theme_settings_screen.dart';
+//import 'language_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String currentEmail;
@@ -26,41 +26,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(0),
         children: [
-          // Sección "Cuenta"
           _buildSectionHeader('Cuenta'),
           _buildSettingsList([
-            _buildSettingItem(
+            _buildStaticSettingItem(
               icon: Icons.email,
               title: 'Cambiar Email',
               subtitle: 'Actualiza tu dirección de correo electrónico',
-              onTap: () => _navigateToChangeEmail(),
             ),
             _buildDivider(),
-            _buildSettingItem(
+            _buildStaticSettingItem(
               icon: Icons.lock,
               title: 'Cambiar Contraseña',
               subtitle: 'Establece una nueva contraseña segura',
-              onTap: () => _navigateToChangePassword(),
             ),
           ]),
-
           const SizedBox(height: 24),
-
-          // Sección "Apariencia"
           _buildSectionHeader('Apariencia'),
           _buildSettingsList([
-            _buildSettingItem(
+            _buildStaticSettingItem(
               icon: Icons.palette,
               title: 'Tema de la App',
               subtitle: 'Personaliza colores y aspecto',
-              onTap: () => _navigateToThemeSettings(),
             ),
             _buildDivider(),
-            _buildSettingItem(
+            _buildStaticSettingItem(
               icon: Icons.language,
               title: 'Idioma',
               subtitle: 'Selecciona el idioma de la aplicación',
-              onTap: () => _navigateToLanguageSettings(),
             ),
           ]),
         ],
@@ -101,66 +93,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSettingItem({
+  Widget _buildStaticSettingItem({
     required IconData icon,
     required String title,
     required String subtitle,
-    required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.blue[700],
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey[400],
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.blue[700],
+              size: 20,
+            ),
           ),
-        ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -175,7 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _navigateToChangeEmail() {
+/*  void _navigateToChangeEmail() {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -214,5 +193,5 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context) => const LanguageSettingsScreen(),
       ),
     );
-  }
+  }*/
 }
