@@ -61,11 +61,16 @@ class YeygokEstilo {
         ),
       ),
 
-      // Cards
-      cardTheme: CardTheme(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+      // Texto
+      textTheme: const TextTheme(
+        headlineMedium: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: negro,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 16,
+          color: negro,
         ),
       ),
     );
