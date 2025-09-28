@@ -4,6 +4,8 @@ import '../widgets/navigation_drawer.dart';
 import '../widgets/navigation_bottom.dart';
 import '../user/user.dart';
 import '../views/settings_screen.dart';
+import '../views/reservations_screen.dart';
+import '../views/my_reservations_screen.dart';
 import '../auth/login.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,7 +24,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  final PageController _pageController = PageController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late List<Widget> _pages;
@@ -36,19 +37,25 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _pages = [
-      HomeContent(username: username),
-      UserScreen(email: widget.email, password: widget.password),
+      HomeContent(username: username), // 0: Inicio
+      UserScreen(email: widget.email, password: widget.password), // 1: Perfil
       SettingsScreen(
+        // 2: Configuración
         currentEmail: widget.email,
         username: username,
       ),
+      const ReservationsScreen(), // 3: Agendar Servicios
+      const MyReservationsScreen(), // 4: Mis Reservas
+      _buildPlaceholderPage(
+          'Notificaciones', Icons.notifications), // 5: Notificaciones
+      _buildPlaceholderPage('Ayuda', Icons.help), // 6: Ayuda
+      _buildPlaceholderPage('Acerca de', Icons.info), // 7: Acerca de
     ];
   }
 
   void _onDrawerItemSelected(int index) {
     setState(() {
       _currentIndex = index;
-      _pageController.jumpToPage(index);
     });
     _scaffoldKey.currentState?.closeDrawer();
   }
@@ -76,23 +83,60 @@ class _HomeScreenState extends State<HomeScreen> {
         onLogout: _logout,
         currentIndex: _currentIndex,
       ),
-      body: PageView(
-        controller: _pageController,
+      body: IndexedStack(
+        index: _currentIndex,
         children: _pages,
-        onPageChanged: (index) {
+      ),
+      bottomNavigationBar: BottomNavigation(
+        currentIndex: _currentIndex > 2
+            ? 0
+            : _currentIndex, // Solo resalta si es 0, 1 o 2
+        onTap: (index) {
           setState(() {
             _currentIndex = index;
           });
         },
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          _pageController.jumpToPage(index);
-        },
+    );
+  }
+
+  Widget _buildPlaceholderPage(String title, IconData icon) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Página en desarrollo',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -105,6 +149,16 @@ class _HomeScreenState extends State<HomeScreen> {
         return 'Perfil';
       case 2:
         return 'Configuración';
+      case 3:
+        return 'Agendar Servicios';
+      case 4:
+        return 'Mis Reservas';
+      case 5:
+        return 'Notificaciones';
+      case 6:
+        return 'Ayuda';
+      case 7:
+        return 'Acerca de';
       default:
         return 'Mi App';
     }
@@ -118,67 +172,96 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '¡Bienvenido, $username!',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Icon(Icons.home, size: 50, color: Colors.blue),
-                  SizedBox(height: 10),
-                  Text('Esta es la pantalla principal de la aplicación'),
-                  SizedBox(height: 10),
-                  Text(
-                    'Usa el menú lateral o la barra de navegación inferior para explorar las diferentes secciones.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '¡Bienvenido, $username!',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const Icon(Icons.home, size: 45, color: Colors.blue),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Esta es la pantalla principal de la aplicación',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Usa el menú lateral o la barra de navegación inferior para explorar las diferentes secciones.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            children: [
-              _buildFeatureCard(Icons.person, 'Perfil', Colors.blue),
-              _buildFeatureCard(Icons.settings, 'Configuración', Colors.green),
-              _buildFeatureCard(
-                  Icons.notifications, 'Notificaciones', Colors.orange),
-              _buildFeatureCard(Icons.help, 'Ayuda', Colors.purple),
-            ],
-          ),
-        ],
+            const SizedBox(height: 16),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                int crossAxisCount = constraints.maxWidth > 400 ? 2 : 2;
+                double childAspectRatio =
+                    constraints.maxWidth > 400 ? 1.0 : 0.9;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: childAspectRatio,
+                  children: [
+                    _buildFeatureCard(Icons.person, 'Perfil', Colors.blue),
+                    _buildFeatureCard(
+                        Icons.settings, 'Configuración', Colors.green),
+                    _buildFeatureCard(
+                        Icons.notifications, 'Notificaciones', Colors.orange),
+                    _buildFeatureCard(Icons.help, 'Ayuda', Colors.purple),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildFeatureCard(IconData icon, String title, Color color) {
     return Card(
-      elevation: 3,
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+            Icon(icon, size: 32, color: color),
+            const SizedBox(height: 8),
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
             ),
           ],
         ),

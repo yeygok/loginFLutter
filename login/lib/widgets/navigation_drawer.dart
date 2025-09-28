@@ -76,9 +76,11 @@ class CustomDrawer extends StatelessWidget {
         _buildMenuItem(Icons.home_outlined, 'Inicio', 0),
         _buildMenuItem(Icons.person_outline, 'Perfil', 1),
         _buildMenuItem(Icons.settings_outlined, 'Configuración', 2),
-        _buildMenuItem(Icons.notifications_outlined, 'Notificaciones', 3),
-        _buildMenuItem(Icons.help_outline, 'Ayuda', 4),
-        _buildMenuItem(Icons.info_outline, 'Acerca de', 5),
+        _buildMenuItem(Icons.calendar_today_outlined, 'Agendar Servicios', 3),
+        _buildMenuItem(Icons.history_outlined, 'Mis Reservas', 4),
+        _buildMenuItem(Icons.notifications_outlined, 'Notificaciones', 5),
+        _buildMenuItem(Icons.help_outline, 'Ayuda', 6),
+        _buildMenuItem(Icons.info_outline, 'Acerca de', 7),
       ],
     );
   }

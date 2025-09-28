@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/appbar.dart';
+import '../theme/theme_provider.dart';
 
 class ThemeSettingsScreen extends StatefulWidget {
   const ThemeSettingsScreen({super.key});
@@ -9,11 +11,9 @@ class ThemeSettingsScreen extends StatefulWidget {
 }
 
 class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
-  bool _isDarkMode = false;
-  bool _useSystemTheme = true;
-
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Tema de la App',
@@ -34,44 +34,22 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Usar tema del sistema'),
-                  subtitle: const Text('Seguir configuración del dispositivo'),
-                  value: _useSystemTheme,
+                  title: const Text('Modo oscuro'),
+                  subtitle: Text(themeProvider.isDarkMode
+                      ? 'Tema oscuro activo'
+                      : 'Tema claro activo'),
+                  value: themeProvider.isDarkMode,
                   onChanged: (value) {
-                    setState(() {
-                      _useSystemTheme = value;
-                    });
+                    themeProvider.toggleTheme(value);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(_useSystemTheme
-                            ? 'Usando tema del sistema'
-                            : 'Usando tema personalizado'),
+                        content: Text(
+                            'Tema cambiado a modo ${value ? 'oscuro' : 'claro'}'),
+                        backgroundColor: value ? Colors.indigo : Colors.amber,
                       ),
                     );
                   },
                 ),
-                if (!_useSystemTheme) ...[
-                  const Divider(),
-                  SwitchListTile(
-                    title: const Text('Modo oscuro'),
-                    subtitle: Text(_isDarkMode
-                        ? 'Tema oscuro activo'
-                        : 'Tema claro activo'),
-                    value: _isDarkMode,
-                    onChanged: (value) {
-                      setState(() {
-                        _isDarkMode = value;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Tema cambiado a modo ${value ? 'oscuro' : 'claro'}'),
-                          backgroundColor: value ? Colors.indigo : Colors.amber,
-                        ),
-                      );
-                    },
-                  ),
-                ],
               ],
             ),
           ),
@@ -86,9 +64,18 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
                   ),
                   title: const Text('Tema Claro'),
                   subtitle: const Text('Fondo blanco con texto oscuro'),
-                  trailing: !_useSystemTheme && !_isDarkMode
+                  trailing: !themeProvider.isDarkMode
                       ? const Icon(Icons.check, color: Colors.green)
                       : null,
+                  onTap: () {
+                    themeProvider.toggleTheme(false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tema cambiado a claro'),
+                        backgroundColor: Colors.amber,
+                      ),
+                    );
+                  },
                 ),
                 const Divider(),
                 ListTile(
@@ -99,21 +86,18 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
                   ),
                   title: const Text('Tema Oscuro'),
                   subtitle: const Text('Fondo oscuro con texto claro'),
-                  trailing: !_useSystemTheme && _isDarkMode
+                  trailing: themeProvider.isDarkMode
                       ? const Icon(Icons.check, color: Colors.green)
                       : null,
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.purple,
-                    child: Icon(Icons.auto_awesome, color: Colors.white),
-                  ),
-                  title: const Text('Automático'),
-                  subtitle: const Text('Seguir configuración del sistema'),
-                  trailing: _useSystemTheme
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
+                  onTap: () {
+                    themeProvider.toggleTheme(true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tema cambiado a oscuro'),
+                        backgroundColor: Colors.indigo,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
