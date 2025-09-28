@@ -60,7 +60,7 @@ class CustomDrawer extends StatelessWidget {
           Text(
             email,
             style: TextStyle(
-              color: YeygokEstilo.blanco.withOpacity(0.9),
+              color: YeygokEstilo.blanco.withValues(alpha: 0.9),
               fontSize: 13,
             ),
           ),

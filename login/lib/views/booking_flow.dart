@@ -121,7 +121,7 @@ class _BookingFlowState extends State<BookingFlow> {
     };
 
     // Aquí enviarías los datos a la API
-    print("Datos de reserva: $bookingData");
+    debugPrint("Datos de reserva: $bookingData");
 
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(

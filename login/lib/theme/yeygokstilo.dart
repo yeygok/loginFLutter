@@ -24,11 +24,9 @@ class YeygokEstilo {
         primary: verdeClaro,
         secondary: verdeAccent,
         surface: blanco,
-        background: grisClaro,
         onPrimary: blanco,
         onSecondary: negro,
         onSurface: negro,
-        onBackground: negro,
       ),
 
       // AppBar
@@ -86,11 +84,9 @@ class YeygokEstilo {
         primary: verdeOscuro,
         secondary: verdeAccent,
         surface: Color(0xFF1E1E1E),
-        background: Color(0xFF121212),
         onPrimary: blanco,
         onSecondary: negro,
         onSurface: blanco,
-        onBackground: blanco,
       ),
 
       // AppBar

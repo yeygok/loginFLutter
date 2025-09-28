@@ -177,7 +177,7 @@ class MyReservationsScreen extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               Colors.white,
-              _getStatusColor(reservation['status']).withOpacity(0.05),
+              _getStatusColor(reservation['status']).withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -199,7 +199,7 @@ class MyReservationsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _getStatusColor(reservation['status']).withOpacity(0.1),
+        color: _getStatusColor(reservation['status']).withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
@@ -239,7 +239,7 @@ class MyReservationsScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.2),
+                        color: Colors.blue.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -257,7 +257,7 @@ class MyReservationsScreen extends StatelessWidget {
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: _getStatusColor(reservation['status'])
-                            .withOpacity(0.2),
+                            .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -345,18 +345,18 @@ class MyReservationsScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.05),
+        color: Colors.blue.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withOpacity(0.2)),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.person, color: Colors.blue, size: 20),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.person, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text(
                 'Técnico Asignado',
                 style: TextStyle(
                   fontSize: 16,
@@ -371,7 +371,7 @@ class MyReservationsScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 25,
-                backgroundColor: Colors.blue.withOpacity(0.2),
+                backgroundColor: Colors.blue.withValues(alpha: 0.2),
                 child: const Icon(Icons.person, color: Colors.blue, size: 30),
               ),
               const SizedBox(width: 16),
@@ -390,7 +390,7 @@ class MyReservationsScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.star, color: Colors.amber, size: 16),
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           '${technician['rating']} ⭐',
@@ -412,7 +412,7 @@ class MyReservationsScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.phone, color: Colors.green, size: 16),
+                        const Icon(Icons.phone, color: Colors.green, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           technician['phone'],
@@ -440,18 +440,18 @@ class MyReservationsScreen extends StatelessWidget {
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.05),
+        color: Colors.green.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withOpacity(0.2)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
-              const Icon(Icons.directions_car, color: Colors.green, size: 20),
-              const SizedBox(width: 8),
-              const Text(
+              Icon(Icons.directions_car, color: Colors.green, size: 20),
+              SizedBox(width: 8),
+              Text(
                 'Vehículo del Técnico',
                 style: TextStyle(
                   fontSize: 16,
@@ -467,7 +467,7 @@ class MyReservationsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.local_shipping,
@@ -537,9 +537,9 @@ class MyReservationsScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.05),
+        color: Colors.orange.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -612,12 +612,12 @@ class MyReservationsScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -635,7 +635,7 @@ class MyReservationsScreen extends StatelessWidget {
               message,
               style: TextStyle(
                 fontSize: 14,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w500,
               ),
             ),

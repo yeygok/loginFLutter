@@ -72,7 +72,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         "rol_id": 2, // Cliente por defecto
       };
 
-      // TODO: Reemplazar con la URL real del backend
+      // ruta del api de registro
+
       final response = await http.post(
         Uri.parse('https://tu-api.com/register'),
         headers: {
@@ -222,7 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
