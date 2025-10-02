@@ -6,7 +6,11 @@ import '../user/user.dart';
 import '../views/settings_screen.dart';
 import '../views/reservations_screen.dart';
 import '../views/my_reservations_screen.dart';
+import '../views/api_test_screen.dart';
+import '../views/my_appointments_screen.dart';
+import '../views/create_appointment_screen.dart';
 import '../auth/login.dart';
+
 // primer commit
 class HomeScreen extends StatefulWidget {
   final String email;
@@ -44,12 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
         currentEmail: widget.email,
         username: username,
       ),
-      const ReservationsScreen(), // 3: Agendar Servicios
-      const MyReservationsScreen(), // 4: Mis Reservas
-      _buildPlaceholderPage(
-          'Notificaciones', Icons.notifications), // 5: Notificaciones
-      _buildPlaceholderPage('Ayuda', Icons.help), // 6: Ayuda
-      _buildPlaceholderPage('Acerca de', Icons.info), // 7: Acerca de
+      const MyAppointmentsScreen(), // 3: Mis Citas (NUEVO)
+      const ReservationsScreen(), // 4: Agendar Servicios
+      const MyReservationsScreen(), // 5: Mis Reservas
+      const ApiTestScreen(), // 6: Pruebas API
+      _buildPlaceholderPage('Ayuda', Icons.help), // 7: Ayuda
+      _buildPlaceholderPage('Acerca de', Icons.info), // 8: Acerca de
     ];
   }
 
@@ -150,14 +154,16 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return 'Configuración';
       case 3:
-        return 'Agendar Servicios';
+        return 'Mis Citas';
       case 4:
-        return 'Mis Reservas';
+        return 'Agendar Servicios';
       case 5:
-        return 'Notificaciones';
+        return 'Mis Reservas';
       case 6:
-        return 'Ayuda';
+        return 'Pruebas API';
       case 7:
+        return 'Ayuda';
+      case 8:
         return 'Acerca de';
       default:
         return 'Mi App';
@@ -185,21 +191,109 @@ class HomeContent extends StatelessWidget {
               maxLines: 2,
             ),
             const SizedBox(height: 16),
+
+            // TARJETA DESTACADA: AGENDAR CITA
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4285F4), Color(0xFF34A853)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.local_car_wash,
+                            color: Colors.white, size: 40),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'MEGA LAVADO S.A.S',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Lavado a vapor profesional',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CreateAppointmentScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF4285F4),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.add_circle_outline),
+                        label: const Text(
+                          'Agendar Cita',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    const Icon(Icons.home, size: 45, color: Colors.blue),
+                    const Icon(Icons.info_outline,
+                        size: 45, color: Colors.blue),
                     const SizedBox(height: 8),
                     const Text(
-                      'Esta es la pantalla principal de la aplicación',
+                      'Bienvenido a la aplicación de MEGA LAVADO',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14),
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Usa el menú lateral o la barra de navegación inferior para explorar las diferentes secciones.',
+                      'Agenda tu servicio de lavado a vapor a domicilio de forma rápida y sencilla.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey[600],
@@ -225,12 +319,13 @@ class HomeContent extends StatelessWidget {
                   mainAxisSpacing: 8,
                   childAspectRatio: childAspectRatio,
                   children: [
-                    _buildFeatureCard(Icons.person, 'Perfil', Colors.blue),
                     _buildFeatureCard(
-                        Icons.settings, 'Configuración', Colors.green),
+                        Icons.event_available, 'Mis Citas', Colors.blue),
+                    _buildFeatureCard(Icons.person, 'Mi Perfil', Colors.green),
                     _buildFeatureCard(
-                        Icons.notifications, 'Notificaciones', Colors.orange),
-                    _buildFeatureCard(Icons.help, 'Ayuda', Colors.purple),
+                        Icons.settings, 'Configuración', Colors.orange),
+                    _buildFeatureCard(
+                        Icons.help_outline, 'Ayuda', Colors.purple),
                   ],
                 );
               },

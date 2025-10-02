@@ -1,108 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/reservation_service.dart';
+import '../providers/auth_provider.dart';
 
-class MyReservationsScreen extends StatelessWidget {
+class MyReservationsScreen extends StatefulWidget {
   const MyReservationsScreen({super.key});
 
-  // Mock data for detailed reservations with technician and vehicle info
-  final List<Map<String, dynamic>> _reservations = const [
-    {
-      'id': 'RES-001',
-      'service': 'Lavado de Carro',
-      'type': 'Premium',
-      'price': 25000,
-      'date': '2025-09-30',
-      'time': '10:00 AM',
-      'status': 'Confirmado',
-      'technician': {
-        'name': 'Carlos Rodríguez',
-        'phone': '+57 300 123 4567',
-        'rating': 4.8,
-        'experience': '5 años',
-        'photo': 'assets/img/technician1.jpg',
-      },
-      'vehicle': {
-        'brand': 'Toyota',
-        'model': 'Hilux',
-        'plate': 'ABC-123',
-        'color': 'Blanco',
-        'year': '2022',
-      },
-      'address': 'Carrera 15 #45-30, Bogotá',
-      'notes': 'Incluye encerado y aspirado completo',
-    },
-    {
-      'id': 'RES-002',
-      'service': 'Lavado de Colchón',
-      'type': 'Gold',
-      'price': 45000,
-      'date': '2025-10-05',
-      'time': '2:00 PM',
-      'status': 'Pendiente',
-      'technician': {
-        'name': 'María González',
-        'phone': '+57 301 987 6543',
-        'rating': 4.9,
-        'experience': '3 años',
-        'photo': 'assets/img/technician2.jpg',
-      },
-      'vehicle': {
-        'brand': 'Chevrolet',
-        'model': 'N300',
-        'plate': 'DEF-456',
-        'color': 'Azul',
-        'year': '2021',
-      },
-      'address': 'Calle 80 #12-25, Bogotá',
-      'notes': 'Colchón queen size, tratamiento anti-ácaros',
-    },
-    {
-      'id': 'RES-003',
-      'service': 'Lavado de Alfombra',
-      'type': 'Sencillo',
-      'price': 15000,
-      'date': '2025-09-25',
-      'time': '9:00 AM',
-      'status': 'Completado',
-      'technician': {
-        'name': 'Luis Martínez',
-        'phone': '+57 302 456 7890',
-        'rating': 4.7,
-        'experience': '4 años',
-        'photo': 'assets/img/technician3.jpg',
-      },
-      'vehicle': {
-        'brand': 'Renault',
-        'model': 'Master',
-        'plate': 'GHI-789',
-        'color': 'Gris',
-        'year': '2020',
-      },
-      'address': 'Avenida 68 #30-15, Bogotá',
-      'notes': 'Alfombra persa 2x3 metros',
-    },
-  ];
+  @override
+  State<MyReservationsScreen> createState() => _MyReservationsScreenState();
+}
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Confirmado':
-        return Colors.green;
-      case 'Pendiente':
-        return Colors.orange;
-      case 'Completado':
-        return Colors.blue;
-      default:
-        return Colors.grey;
+class _MyReservationsScreenState extends State<MyReservationsScreen> {
+  List<Reservation> _reservations = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReservations();
+  }
+
+  Future<void> _loadReservations() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Obtener el ID del cliente desde el AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final clienteId = authProvider.currentUser?.id ?? 0;
+
+      if (clienteId == 0) {
+        throw ReservationException('No se encontró usuario autenticado');
+      }
+
+      // Cargar reservas desde la API
+      final reservations =
+          await ReservationService.getMyReservations(clienteId);
+
+      setState(() {
+        _reservations = reservations;
+        _isLoading = false;
+      });
+
+      debugPrint('✅ Se cargaron ${reservations.length} reservas');
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+
+      debugPrint('❌ Error al cargar reservas: $e');
     }
   }
 
   IconData _getStatusIcon(String status) {
     switch (status) {
-      case 'Confirmado':
-        return Icons.check_circle;
-      case 'Pendiente':
-        return Icons.access_time;
+      case 'Solicitado':
+        return Icons.hourglass_empty;
+      case 'Programado':
+        return Icons.event_available;
+      case 'En Proceso':
+        return Icons.build;
       case 'Completado':
-        return Icons.verified;
+        return Icons.check_circle;
+      case 'Cancelado':
+        return Icons.cancel;
       default:
         return Icons.info;
     }
@@ -115,16 +80,73 @@ class MyReservationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _reservations.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _reservations.length,
-              itemBuilder: (context, index) {
-                final reservation = _reservations[index];
-                return _buildReservationCard(context, reservation, index);
-              },
-            ),
+      body: _isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Cargando reservas...'),
+                ],
+              ),
+            )
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline,
+                          size: 64, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error al cargar reservas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: _loadReservations,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Reintentar'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : _reservations.isEmpty
+                  ? _buildEmptyState()
+                  : RefreshIndicator(
+                      onRefresh: _loadReservations,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _reservations.length,
+                        itemBuilder: (context, index) {
+                          final reservation = _reservations[index];
+                          return _buildReservationCard(
+                              context, reservation, index);
+                        },
+                      ),
+                    ),
     );
   }
 
@@ -134,23 +156,21 @@ class MyReservationsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.receipt_long,
+            Icons.event_busy,
             size: 80,
             color: Colors.grey[400],
           ),
           const SizedBox(height: 20),
           const Text(
-            '¡No tienes reservas aún!',
+            'No tienes reservas',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
             ),
           ),
           const SizedBox(height: 10),
           Text(
-            'Cuando realices una reserva, aparecerá aquí con todos los detalles',
-            textAlign: TextAlign.center,
+            'Tus próximas reservas aparecerán aquí',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
@@ -162,7 +182,7 @@ class MyReservationsScreen extends StatelessWidget {
   }
 
   Widget _buildReservationCard(
-      BuildContext context, Map<String, dynamic> reservation, int index) {
+      BuildContext context, Reservation reservation, int index) {
     return Card(
       elevation: 8,
       margin: const EdgeInsets.only(bottom: 20),
@@ -177,7 +197,9 @@ class MyReservationsScreen extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               Colors.white,
-              _getStatusColor(reservation['status']).withValues(alpha: 0.05),
+              Color(int.parse(
+                      reservation.estadoColor.replaceFirst('#', '0xFF')))
+                  .withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -185,21 +207,26 @@ class MyReservationsScreen extends StatelessWidget {
           children: [
             _buildReservationHeader(reservation),
             _buildReservationDetails(reservation),
-            _buildTechnicianInfo(reservation),
-            _buildVehicleInfo(reservation),
+            if (reservation.tecnicoNombre != null)
+              _buildTechnicianInfo(reservation),
+            if (reservation.vehiculoPlaca != null)
+              _buildVehicleInfo(reservation),
             _buildPriceSection(reservation),
-            _buildThankYouMessage(reservation),
+            _buildActionButtons(reservation),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildReservationHeader(Map<String, dynamic> reservation) {
+  Widget _buildReservationHeader(Reservation reservation) {
+    final statusColor =
+        Color(int.parse(reservation.estadoColor.replaceFirst('#', '0xFF')));
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _getStatusColor(reservation['status']).withValues(alpha: 0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
@@ -210,11 +237,11 @@ class MyReservationsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _getStatusColor(reservation['status']),
+              color: statusColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              _getStatusIcon(reservation['status']),
+              _getStatusIcon(reservation.estadoTexto),
               color: Colors.white,
               size: 24,
             ),
@@ -225,7 +252,7 @@ class MyReservationsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  reservation['service'],
+                  reservation.servicioNombre ?? 'Servicio',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -233,49 +260,27 @@ class MyReservationsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        reservation['type'],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    reservation.estadoTexto,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
                     ),
-                    const SizedBox(width: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(reservation['status'])
-                            .withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        reservation['status'],
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: _getStatusColor(reservation['status']),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
           Text(
-            'ID: ${reservation['id']}',
+            'ID: ${reservation.id}',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
@@ -287,19 +292,30 @@ class MyReservationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildReservationDetails(Map<String, dynamic> reservation) {
+  Widget _buildReservationDetails(Reservation reservation) {
+    // Formatear fecha
+    final fechaServicio = DateTime.parse(reservation.fechaServicio);
+    final fecha =
+        '${fechaServicio.day}/${fechaServicio.month}/${fechaServicio.year}';
+    final hora =
+        '${fechaServicio.hour.toString().padLeft(2, '0')}:${fechaServicio.minute.toString().padLeft(2, '0')}';
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          _buildDetailRow(Icons.calendar_today, 'Fecha', reservation['date']),
+          _buildDetailRow(Icons.calendar_today, 'Fecha', fecha),
           const SizedBox(height: 12),
-          _buildDetailRow(Icons.access_time, 'Hora', reservation['time']),
+          _buildDetailRow(Icons.access_time, 'Hora', hora),
           const SizedBox(height: 12),
           _buildDetailRow(
-              Icons.location_on, 'Dirección', reservation['address']),
-          const SizedBox(height: 12),
-          _buildDetailRow(Icons.notes, 'Notas', reservation['notes']),
+              Icons.notes, 'Observaciones', reservation.observaciones),
+          if (reservation.notasTecnico != null &&
+              reservation.notasTecnico!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            _buildDetailRow(Icons.assignment, 'Notas del técnico',
+                reservation.notasTecnico!),
+          ],
         ],
       ),
     );
@@ -327,9 +343,9 @@ class MyReservationsScreen extends StatelessWidget {
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   color: Colors.black87,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -339,10 +355,9 @@ class MyReservationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTechnicianInfo(Map<String, dynamic> reservation) {
-    final technician = reservation['technician'];
+  Widget _buildTechnicianInfo(Reservation reservation) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.blue.withValues(alpha: 0.05),
@@ -380,50 +395,31 @@ class MyReservationsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      technician['name'],
+                      reservation.tecnicoNombre ?? 'Por asignar',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${technician['rating']} ⭐',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black87,
+                    if (reservation.tecnicoTelefono != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone,
+                              color: Colors.green, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            reservation.tecnicoTelefono!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.green,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '${technician['experience']} exp.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.phone, color: Colors.green, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          technician['phone'],
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -434,10 +430,9 @@ class MyReservationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildVehicleInfo(Map<String, dynamic> reservation) {
-    final vehicle = reservation['vehicle'];
+  Widget _buildVehicleInfo(Reservation reservation) {
     return Container(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.green.withValues(alpha: 0.05),
@@ -452,7 +447,7 @@ class MyReservationsScreen extends StatelessWidget {
               Icon(Icons.directions_car, color: Colors.green, size: 20),
               SizedBox(width: 8),
               Text(
-                'Vehículo del Técnico',
+                'Vehículo de Servicio',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -479,48 +474,12 @@ class MyReservationsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${vehicle['brand']} ${vehicle['model']} ${vehicle['year']}',
+                      '${reservation.vehiculoMarca ?? "Vehículo"} - ${reservation.vehiculoPlaca ?? "Sin placa"}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          'Placa: ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          vehicle['plate'],
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          'Color: ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          vehicle['color'],
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -532,50 +491,45 @@ class MyReservationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceSection(Map<String, dynamic> reservation) {
+  Widget _buildPriceSection(Reservation reservation) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.05),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.green.withValues(alpha: 0.1),
+            Colors.blue.withValues(alpha: 0.1),
+          ],
+        ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const Row(
             children: [
-              const Text(
+              Icon(Icons.attach_money, color: Colors.green, size: 28),
+              SizedBox(width: 8),
+              Text(
                 'Total a Pagar',
                 style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.orange,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _formatPrice(reservation['price']),
-                style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.orange,
+                  color: Colors.black87,
                 ),
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.orange,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.receipt,
-              color: Colors.white,
-              size: 24,
+          Text(
+            _formatPrice(reservation.precioTotal),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
             ),
           ),
         ],
@@ -583,65 +537,82 @@ class MyReservationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildThankYouMessage(Map<String, dynamic> reservation) {
-    String message = '';
-    IconData icon = Icons.favorite;
-    Color color = Colors.pink;
+  Widget _buildActionButtons(Reservation reservation) {
+    // Solo mostrar botón de cancelar si el estado permite cancelación
+    final canCancel = reservation.estadoId == 1 ||
+        reservation.estadoId == 2; // Solicitado o Programado
 
-    switch (reservation['status']) {
-      case 'Confirmado':
-        message =
-            '¡Gracias por tu reserva! Nuestro técnico llegará puntualmente.';
-        icon = Icons.schedule;
-        color = Colors.green;
-        break;
-      case 'Pendiente':
-        message = '¡Gracias por elegirnos! Estamos procesando tu solicitud.';
-        icon = Icons.pending;
-        color = Colors.orange;
-        break;
-      case 'Completado':
-        message = '¡Servicio completado! Gracias por confiar en nosotros.';
-        icon = Icons.check_circle;
-        color = Colors.blue;
-        break;
+    if (!canCancel) {
+      return const SizedBox.shrink();
     }
 
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+      padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                fontSize: 14,
-                color: color.withValues(alpha: 0.8),
-                fontWeight: FontWeight.w500,
+            child: OutlinedButton.icon(
+              onPressed: () => _cancelReservation(reservation),
+              icon: const Icon(Icons.cancel_outlined),
+              label: const Text('Cancelar Reserva'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _cancelReservation(Reservation reservation) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar Reserva'),
+        content:
+            const Text('¿Estás seguro de que deseas cancelar esta reserva?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Sí, Cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ReservationService.cancelReservation(reservation.id);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Reserva cancelada exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Recargar las reservas
+          _loadReservations();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cancelar: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }

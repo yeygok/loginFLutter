@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../services/reservation_service.dart';
+import '../providers/auth_provider.dart';
 
 class BookingFlow extends StatefulWidget {
   final String serviceName;
@@ -95,42 +98,129 @@ class _BookingFlowState extends State<BookingFlow> {
     }
   }
 
-  void _confirmBooking() {
-    // Aquí construirías el JSON final con todos los datos
-    final bookingData = {
-      "cliente_id": 3, // Este vendría del usuario logueado
-      "servicio_tipo_id": widget.serviceTypeId,
-      "ubicacion_servicio_id": 1, // Se asignaría automáticamente
-      "fecha_servicio": _selectedDate != null && _selectedTime != null
-          ? "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}T${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00"
-          : null,
-      "precio_total": widget.price,
-      "estado_id": 2, // Estado "Programado"
-      "tecnico_id": 1, // Se asigna automáticamente
-      "vehiculo_id": 2, // Se asigna automáticamente
-      "observaciones": _observationsController.text.isEmpty
-          ? "Servicio ${widget.serviceName} - Plan ${widget.planName}"
-          : _observationsController.text,
-      "notas_tecnico": "",
-      // Datos adicionales del cliente
-      "cliente_nombre": _nameController.text,
-      "cliente_apellido": _lastNameController.text,
-      "cliente_telefono": _phoneController.text,
-      "direccion_servicio": _addressController.text,
-      "ciudad": _cityController.text,
-    };
+  void _confirmBooking() async {
+    // Validar que todos los datos necesarios estén completos
+    if (_selectedDate == null || _selectedTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor selecciona fecha y hora del servicio'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
-    // Aquí enviarías los datos a la API
-    debugPrint("Datos de reserva: $bookingData");
+    if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor completa los datos personales'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-            '¡Servicio agendado exitosamente! Te contactaremos en las próximas 2 horas.'),
-        duration: Duration(seconds: 3),
+    // Mostrar indicador de carga
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
       ),
     );
+
+    try {
+      // Obtener el ID del cliente desde el AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final clienteId =
+          authProvider.currentUser?.id ?? 1; // Fallback a 1 si no hay usuario
+
+      // Formatear la fecha y hora para el backend
+      final fechaServicio = _selectedDate != null && _selectedTime != null
+          ? "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}T${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}:00"
+          : DateTime.now().toIso8601String();
+
+      // Preparar observaciones
+      final observaciones = _observationsController.text.isEmpty
+          ? "Servicio ${widget.serviceName} - Plan ${widget.planName}\n"
+              "Dirección: ${_addressController.text}\n"
+              "Ciudad: ${_cityController.text}\n"
+              "Cliente: ${_nameController.text} ${_lastNameController.text}\n"
+              "Teléfono: ${_phoneController.text}"
+          : _observationsController.text;
+
+      // Llamar al servicio de reservas
+      final response = await ReservationService.createReservation(
+        clienteId: clienteId,
+        servicioTipoId: widget.serviceTypeId,
+        ubicacionServicioId:
+            1, // Por ahora es fijo, luego se puede crear dinámicamente
+        fechaServicio: fechaServicio,
+        precioTotal: widget.price,
+        estadoId: 2, // Estado "Programado"
+        tecnicoId:
+            1, // Se asigna automáticamente (luego el backend lo puede asignar)
+        vehiculoId:
+            2, // Se asigna automáticamente (luego el backend lo puede asignar)
+        observaciones: observaciones,
+        notasTecnico: "",
+      );
+
+      // Cerrar el diálogo de carga
+      if (mounted) Navigator.of(context).pop();
+
+      // Cerrar el diálogo de booking
+      if (mounted) Navigator.of(context).pop();
+
+      // Mostrar mensaje de éxito
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response.message,
+              style: const TextStyle(fontSize: 16),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Ver Reserva',
+              textColor: Colors.white,
+              onPressed: () {
+                // Aquí podrías navegar a la pantalla de "Mis Reservas"
+                // Navigator.pushNamed(context, '/my-reservations');
+              },
+            ),
+          ),
+        );
+      }
+
+      debugPrint(
+          "✅ Reserva creada exitosamente con ID: ${response.reservationId}");
+    } catch (e) {
+      // Cerrar el diálogo de carga
+      if (mounted) Navigator.of(context).pop();
+
+      // Mostrar mensaje de error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al crear la reserva: ${e.toString()}',
+              style: const TextStyle(fontSize: 14),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Reintentar',
+              textColor: Colors.white,
+              onPressed: () => _confirmBooking(),
+            ),
+          ),
+        );
+      }
+
+      debugPrint("❌ Error al crear reserva: $e");
+    }
   }
 
   @override
