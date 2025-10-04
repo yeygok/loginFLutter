@@ -20,35 +20,53 @@ class AppConfig {
   // CONFIGURACIÓN DE RED
   // ============================================
 
-  /// IP de tu PC en la red local
-  /// IMPORTANTE: Cambia esto a tu IP local
-  /// Para encontrarla:
-  /// - Windows: ipconfig
-  /// - Mac/Linux: ifconfig | grep "inet "
-  /// - O usa: 10.0.2.2 para emulador Android
-  static const String _localIP = '10.31.103.28'; // ✅ Tu IP actual
+  /// MODOS DE CONEXIÓN:
+  /// - 'local': Misma red WiFi (192.168.x.x o 10.x.x.x)
+  /// - 'ngrok': Túnel público con ngrok (funciona desde cualquier red)
+  /// - 'production': Servidor en producción con dominio real
+  static const String _connectionMode = 'ngrok'; // 👈 Cambiado a ngrok
+
+  /// IP de tu PC en la red local (solo para modo 'local')
+  static const String _localIP = '10.31.103.28';
   static const String _localPort = '3000';
 
-  /// URLs base según el entorno
-  static String get baseUrl {
-    if (isWeb) {
-      // Para web, usa proxy o la URL completa con CORS habilitado
-      return '/api'; // Proxy configurado
-      // return 'http://$_localIP:$_localPort/api'; // URL directa (requiere CORS)
-    } else {
-      // Para móvil (Android/iOS)
-      // 10.0.2.2 = localhost del emulador Android
-      // 192.168.x.x = IP local de tu PC para dispositivo físico
-      if (isDebug) {
-        // Usa esto si estás con dispositivo físico conectado a la misma WiFi
-        return 'http://$_localIP:$_localPort/api';
+  /// URL de ngrok (solo para modo 'ngrok')
+  /// Ejemplo: 'https://abc123.ngrok.io'
+  /// Obtén esta URL ejecutando: ngrok http 3000
+  static const String _ngrokUrl =
+      'https://bardlike-reita-anthropomorphically.ngrok-free.dev';
 
-        // Descomenta esto si usas emulador Android:
-        // return 'http://10.0.2.2:$_localPort/api';
-      } else {
-        // Producción: usa tu dominio real con HTTPS
-        return 'https://tu-dominio.com/api';
+  /// URL de producción (solo para modo 'production')
+  static const String _productionUrl = 'https://tu-dominio.com';
+
+  /// URLs base según el entorno y modo de conexión
+  static String get baseUrl {
+    // En modo debug, usar la configuración según _connectionMode
+    if (isDebug) {
+      switch (_connectionMode) {
+        case 'local':
+          // Mismo WiFi - usar IP local
+          if (isWeb) {
+            return 'http://$_localIP:$_localPort/api';
+          } else {
+            // Android/iOS
+            return 'http://$_localIP:$_localPort/api';
+          }
+
+        case 'ngrok':
+          // Túnel público - funciona desde cualquier red
+          return '$_ngrokUrl/api';
+
+        case 'production':
+          // Servidor en producción
+          return '$_productionUrl/api';
+
+        default:
+          throw Exception('Modo de conexión no válido: $_connectionMode');
       }
+    } else {
+      // En producción siempre usar la URL de producción
+      return '$_productionUrl/api';
     }
   }
 
@@ -155,11 +173,16 @@ class AppConfig {
       print('═══════════════════════════════════════════════════');
       print('📱 Plataforma: ${isWeb ? 'WEB' : 'MÓVIL'}');
       print('🐛 Debug: $isDebug');
+      print('🔌 Modo de Conexión: $_connectionMode');
       print('🌐 Base URL: $baseUrl');
       print('🔐 Login URL: $loginUrl');
       print('📅 Appointments URL: $appointmentsUrl');
       print('⏱️  Timeout: ${apiTimeout.inSeconds}s');
       print('🧪 Testing Mode: $enableTestingMode');
+      if (_connectionMode == 'local') {
+        print('💡 Consejo: Para conectar desde otra red, usa ngrok');
+        print('   Ver: CONECTAR_REDES_DIFERENTES.md');
+      }
       print('═══════════════════════════════════════════════════');
     }
   }

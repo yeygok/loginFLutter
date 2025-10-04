@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../home/home.dart';
 import '../utils/validation_utils.dart';
 import '../providers/auth_provider.dart';
@@ -17,12 +18,56 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _rememberMe = false;
+  bool _isLoadingCredentials = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  // Cargar credenciales guardadas
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString('saved_email');
+    final savedPassword = prefs.getString('saved_password');
+    final rememberMe = prefs.getBool('remember_me') ?? false;
+
+    if (savedEmail != null && savedEmail.isNotEmpty) {
+      setState(() {
+        _usernameController.text = savedEmail;
+        if (savedPassword != null && savedPassword.isNotEmpty) {
+          _passwordController.text = savedPassword;
+        }
+        _rememberMe = rememberMe;
+        _isLoadingCredentials = false;
+      });
+    } else {
+      setState(() {
+        _isLoadingCredentials = false;
+      });
+    }
+  }
+
+  // Guardar credenciales si el usuario lo solicita
+  Future<void> _saveCredentials(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('saved_email', email);
+      await prefs.setString('saved_password', password);
+      await prefs.setBool('remember_me', true);
+    } else {
+      await prefs.remove('saved_email');
+      await prefs.remove('saved_password');
+      await prefs.setBool('remember_me', false);
+    }
   }
 
   void _navigateToRegister() async {
@@ -34,11 +79,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      final email = _usernameController.text;
-      // Por ahora no requerimos password
-      final password = _passwordController.text.isEmpty
-          ? 'test123'
-          : _passwordController.text;
+      final email = _usernameController.text.trim();
+      final password = _passwordController.text;
+
+      // Guardar credenciales si el usuario marcó "Recordar mis datos"
+      await _saveCredentials(email, password);
 
       // Obtener el AuthProvider
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -64,6 +109,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Mostrar indicador de carga mientras se cargan las credenciales
+    if (_isLoadingCredentials) {
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
@@ -79,6 +134,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 40),
                     _buildHeader(),
                     const SizedBox(height: 60),
+
+                    // Mostrar mensaje de éxito si las credenciales fueron cargadas
+                    if (_usernameController.text.isNotEmpty && _rememberMe)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green[200]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle_outline,
+                                color: Colors.green[700]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '✓ Credenciales cargadas',
+                                style: TextStyle(color: Colors.green[700]),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
                     // Mostrar mensaje de error si existe
                     if (authProvider.errorMessage != null)
@@ -236,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Contraseña (opcional)',
+                'Contraseña',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black87,
@@ -258,15 +338,28 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          TextField(
+          TextFormField(
             controller: _passwordController,
-            decoration: const InputDecoration(
-              labelText: 'Contraseña (opcional)',
+            decoration: InputDecoration(
               hintText: '••••••••',
-              border: OutlineInputBorder(),
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF4285F4)),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             obscureText: true,
-            // validator: ValidationUtils.validatePassword, // Deshabilitado por ahora
+            validator: ValidationUtils.validatePassword,
           ),
           const SizedBox(height: 16),
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
 import '../utils/validation_utils.dart';
+import '../services/auth_service.dart';
+import '../providers/auth_provider.dart';
+import '../home/home.dart';
 import 'login.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -18,7 +20,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _apellidoController = TextEditingController();
   final _emailController = TextEditingController();
   final _telefonoController = TextEditingController();
-  final _direccionController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -33,7 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _apellidoController.dispose();
     _emailController.dispose();
     _telefonoController.dispose();
-    _direccionController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -61,50 +61,75 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       // Preparar datos para el endpoint
-      final requestBody = {
-        "email": _emailController.text.trim(),
-        "password": _passwordController.text,
+      final registerData = {
         "nombre": _nombreController.text.trim(),
         "apellido": _apellidoController.text.trim(),
+        "email": _emailController.text.trim(),
         "telefono": _telefonoController.text
             .replaceAll(RegExp(r'[\s\-\(\)]'), ''), // Solo números
-        "direccion": _direccionController.text.trim(),
-        "rol_id": 2, // Cliente por defecto
+        "password": _passwordController.text,
       };
 
-      // ruta del api de registro
+      // Llamar al servicio de registro
+      final response = await AuthService.register(registerData);
 
-      final response = await http.post(
-        Uri.parse('https://tu-api.com/register'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(requestBody),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        // Registro exitoso
+      if (response.success && mounted) {
+        // Registro exitoso - Mostrar mensaje
         _showSnackBar('¡Cuenta creada exitosamente!', Colors.green);
 
-        // Navegar al login después de un breve delay
-        await Future.delayed(const Duration(seconds: 2));
+        // Esperar un momento para que el usuario vea el mensaje
+        await Future.delayed(const Duration(seconds: 1));
+
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
+          // Hacer login automático con las credenciales recién registradas
+          final authProvider =
+              Provider.of<AuthProvider>(context, listen: false);
+
+          final email = _emailController.text.trim();
+          final password = _passwordController.text;
+
+          final loginSuccess = await authProvider.login(email, password);
+
+          if (loginSuccess && mounted) {
+            // Login exitoso - Navegar a HomeScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                  email: email,
+                  password: password,
+                ),
+              ),
+            );
+          } else {
+            // Si el login automático falla, ir a la pantalla de login
+            _showSnackBar(
+              'Cuenta creada. Por favor inicia sesión.',
+              Colors.blue,
+            );
+            await Future.delayed(const Duration(seconds: 2));
+            if (mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            }
+          }
         }
       } else {
         // Error del servidor
-        final errorData = json.decode(response.body);
         _showSnackBar(
-          errorData['message'] ?? 'Error al crear la cuenta',
+          response.message,
           Colors.red,
         );
       }
     } catch (e) {
       // Error de conexión
-      _showSnackBar('Error de conexión. Inténtalo de nuevo.', Colors.red);
+      _showSnackBar(
+        'Error de conexión. Verifica tu internet e inténtalo de nuevo.',
+        Colors.red,
+      );
+      print('❌ Error en registro: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -292,23 +317,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label: 'Teléfono',
               icon: Icons.phone_outlined,
               validator: ValidationUtils.validatePhone,
-            ),
-            const SizedBox(height: 20),
-
-            // Dirección
-            _buildTextFormField(
-              controller: _direccionController,
-              label: 'Dirección',
-              icon: Icons.location_on_outlined,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingresa tu dirección';
-                }
-                if (value.length < 10) {
-                  return 'La dirección debe ser más específica';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 20),
 

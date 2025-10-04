@@ -66,35 +66,15 @@ class ValidationUtils {
     return null;
   }
 
-  // Validación de contraseña robusta
+  // Validación de contraseña (simple, mínimo 6 caracteres)
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Por favor ingrese una contraseña';
     }
 
-    // Verificar longitud (8-16 caracteres)
-    if (value.length < 8 || value.length > 16) {
-      return 'La contraseña debe tener entre 8 y 16 caracteres';
-    }
-
-    // Verificar al menos un dígito
-    if (!RegExp(r'\d').hasMatch(value)) {
-      return 'La contraseña debe tener al menos un dígito';
-    }
-
-    // Verificar al menos una minúscula
-    if (!RegExp(r'[a-z]').hasMatch(value)) {
-      return 'La contraseña debe tener al menos una letra minúscula';
-    }
-
-    // Verificar al menos una mayúscula
-    if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'La contraseña debe tener al menos una letra mayúscula';
-    }
-
-    // Verificar al menos un carácter no alfanumérico
-    if (!RegExp(r'[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]').hasMatch(value)) {
-      return 'La contraseña debe tener al menos un carácter especial (!@#\$%^&*...)';
+    // Verificar longitud mínima (6 caracteres como requiere el backend)
+    if (value.length < 6) {
+      return 'La contraseña debe tener al menos 6 caracteres';
     }
 
     return null;
@@ -139,11 +119,6 @@ class ValidationUtils {
 
   // Función para mostrar requisitos de contraseña
   static String getPasswordRequirements() {
-    return '''La contraseña debe tener:
-• Entre 8 y 16 caracteres
-• Al menos un dígito (0-9)
-• Al menos una minúscula (a-z)
-• Al menos una mayúscula (A-Z)
-• Al menos un carácter especial (!@#\$%^&*...)''';
+    return 'La contraseña debe tener al menos 6 caracteres';
   }
 }
