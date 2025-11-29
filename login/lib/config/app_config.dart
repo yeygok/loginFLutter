@@ -70,34 +70,28 @@ class AppConfig {
     }
   }
 
-  // ============================================
   // ENDPOINTS DE AUTENTICACIÓN
-  // ============================================
+  
 
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
   static const String verifyTokenEndpoint = '/auth/verify';
   static const String logoutEndpoint = '/auth/logout';
 
-  // ============================================
   // ENDPOINTS DE CITAS/AGENDAMIENTO
-  // ============================================
 
   static const String appointmentsEndpoint = '/appointments';
   static const String createAppointmentEndpoint = '/appointments/create';
   static const String myAppointmentsEndpoint = '/appointments/my-appointments';
   static const String cancelAppointmentEndpoint = '/appointments/cancel';
 
-  // ============================================
   // ENDPOINTS DE SERVICIOS
-  // ============================================
 
   static const String servicesEndpoint = '/services';
   static const String serviceTypesEndpoint = '/services/types';
 
-  // ============================================
   // URLs COMPLETAS (Getters)
-  // ============================================
+  
 
   // Autenticación
   static String get loginUrl => '$baseUrl$loginEndpoint';
@@ -117,16 +111,12 @@ class AppConfig {
   static String get servicesUrl => '$baseUrl$servicesEndpoint';
   static String get serviceTypesUrl => '$baseUrl$serviceTypesEndpoint';
 
-  // ============================================
   // CONFIGURACIÓN DE TIMEOUTS
-  // ============================================
 
   static const Duration apiTimeout = Duration(seconds: 30);
   static const Duration connectionTimeout = Duration(seconds: 10);
 
-  // ============================================
   // HEADERS HTTP
-  // ============================================
 
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
@@ -138,14 +128,11 @@ class AppConfig {
         'Authorization': 'Bearer $token',
       };
 
-  // ============================================
   // CONFIGURACIÓN DE LA APP
-  // ============================================
 
   static const String appName = 'MEGA LAVADO S.A.S';
   static const String appVersion = '1.0.0';
 
-  // ============================================
   // MODO TESTING
   // ============================================
 
